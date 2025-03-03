@@ -2,20 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+const http = require('http');
 const socketIo = require('socket.io');
 
 dotenv.config();
 const app = express();
 
-// SSL sertifikalarını kaldır
-
 // CORS ayarları
 const allowedOrigins = ['https://chat.ipsstech.com.tr'];
 
-// CORS middleware'ini daha detaylı yapılandır
+// CORS middleware'ini yapılandır
 app.use(cors({
   origin: function(origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -30,8 +26,11 @@ app.use(cors({
   exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 
-// Socket.io'yu HTTPS sunucusuyla başlat
-const io = socketIo(app, {
+// HTTP sunucusu oluştur
+const server = http.createServer(app);
+
+// Socket.io'yu HTTP sunucusuyla başlat
+const io = socketIo(server, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
@@ -47,7 +46,7 @@ const io = socketIo(app, {
   cookie: false
 });
 
-// Pre-flight istekleri için OPTIONS handler ekle
+// Pre-flight istekleri için OPTIONS handler
 app.options('*', cors());
 
 // Body parser middleware
@@ -125,6 +124,6 @@ io.engine.on("connection_error", (err) => {
 
 // Server başlatma
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`HTTPS Server ${PORT} portunda çalışıyor`);
+server.listen(PORT, () => {
+  console.log(`HTTP Server ${PORT} portunda çalışıyor`);
 }); 

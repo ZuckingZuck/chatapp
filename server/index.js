@@ -10,14 +10,7 @@ const socketIo = require('socket.io');
 dotenv.config();
 const app = express();
 
-// SSL sertifikalarını yükle
-const options = {
-  key: fs.readFileSync('/etc/letsencrypt/live/chatapi.ipsstech.com.tr/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/chatapi.ipsstech.com.tr/fullchain.pem')
-};
-
-// HTTPS sunucusu oluştur
-const server = https.createServer(options, app);
+// SSL sertifikalarını kaldır
 
 // CORS ayarları
 const allowedOrigins = ['https://chat.ipsstech.com.tr'];
@@ -38,7 +31,7 @@ app.use(cors({
 }));
 
 // Socket.io'yu HTTPS sunucusuyla başlat
-const io = socketIo(server, {
+const io = socketIo(app, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
@@ -132,6 +125,6 @@ io.engine.on("connection_error", (err) => {
 
 // Server başlatma
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`HTTPS Server ${PORT} portunda çalışıyor`);
 }); 

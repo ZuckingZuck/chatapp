@@ -26,6 +26,7 @@ services:
       - "8080:80"
     volumes:
       - ./nginx/prod:/etc/nginx/conf.d
+      - ./client/build:/usr/share/nginx/html
     depends_on:
       - client
       - server

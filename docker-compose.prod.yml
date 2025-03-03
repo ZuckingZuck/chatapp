@@ -23,11 +23,10 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ./nginx/prod:/etc/nginx/conf.d
-      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - client
       - server

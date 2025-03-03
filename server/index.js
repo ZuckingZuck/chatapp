@@ -45,7 +45,13 @@ const io = socketIo(server, {
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  path: '/socket.io/',
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  upgradeTimeout: 30000,
+  allowUpgrades: true,
+  cookie: false
 });
 
 // Pre-flight istekleri için OPTIONS handler ekle
@@ -117,6 +123,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Bir kullanıcı ayrıldı');
   });
+});
+
+// WebSocket bağlantı hatalarını yakala
+io.engine.on("connection_error", (err) => {
+  console.log('Socket.io bağlantı hatası:', err);
 });
 
 // Server başlatma

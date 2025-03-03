@@ -26,16 +26,23 @@ export const SocketProvider = ({ children }) => {
       Notification.requestPermission();
     }
 
-    // Socket bağlantı URL'ini ortama göre ayarla
     const SOCKET_URL = process.env.NODE_ENV === 'production'
       ? 'https://chatapi.ipsstech.com.tr'
       : 'http://localhost:5000';
 
     const newSocket = io(SOCKET_URL, {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       secure: true,
       rejectUnauthorized: false,
-      withCredentials: true
+      withCredentials: true,
+      path: '/socket.io/',
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      autoConnect: true,
+      forceNew: true
     });
     
     setSocket(newSocket);
@@ -85,8 +92,13 @@ export const SocketProvider = ({ children }) => {
       setIsCallActive(false);
     });
 
+    // Bağlantı hata yönetimi
     newSocket.on('connect_error', (error) => {
       console.error('Socket bağlantı hatası:', error);
+      // Polling'e geri dön
+      if (error.type === 'TransportError') {
+        newSocket.io.opts.transports = ['polling', 'websocket'];
+      }
     });
 
     return () => {

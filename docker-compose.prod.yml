@@ -24,7 +24,6 @@ services:
     image: nginx:alpine
     ports:
       - "8080:80"
-      - "8443:443"
     volumes:
       - ./nginx/prod:/etc/nginx/conf.d
     depends_on:

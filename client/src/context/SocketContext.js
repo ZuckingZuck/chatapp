@@ -28,14 +28,17 @@ export const SocketProvider = ({ children }) => {
 
     const SOCKET_URL = process.env.NODE_ENV === 'production'
       ? 'https://chatapi.ipsstech.com.tr'
-      : window.location.origin;  // Docker içinde çalışırken
+      : window.location.origin;
 
     const newSocket = io(SOCKET_URL, {
+      path: '/socket.io/',
       transports: ['websocket', 'polling'],
-      path: '/socket.io',
+      secure: true,
+      rejectUnauthorized: false,
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      timeout: 20000
     });
     
     setSocket(newSocket);

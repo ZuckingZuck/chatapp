@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' 
+  baseURL: process.env.NODE_ENV === 'production'
     ? 'https://chatapi.ipsstech.com.tr/api'
-    : 'http://localhost:5000/api',
+    : '/api',  // Docker içinde çalışırken
   timeout: 5000,
   withCredentials: true,
   headers: {

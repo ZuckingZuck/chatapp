@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://192.168.1.103:5000/api',
+  baseURL: process.env.NODE_ENV === 'production' 
+    ? 'https://chatapi.ipsstech.com.tr/api'
+    : 'http://localhost:5000/api',
   timeout: 5000,
   withCredentials: true,
   headers: {

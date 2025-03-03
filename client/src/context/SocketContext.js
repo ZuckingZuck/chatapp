@@ -26,7 +26,12 @@ export const SocketProvider = ({ children }) => {
       Notification.requestPermission();
     }
 
-    const newSocket = io('https://192.168.1.103:5000', {
+    // Socket bağlantı URL'ini ortama göre ayarla
+    const SOCKET_URL = process.env.NODE_ENV === 'production'
+      ? 'https://chatapi.ipsstech.com.tr'
+      : 'http://localhost:5000';
+
+    const newSocket = io(SOCKET_URL, {
       transports: ['websocket'],
       secure: true,
       rejectUnauthorized: false,

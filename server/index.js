@@ -19,22 +19,23 @@ const options = {
 // HTTPS sunucusu oluştur
 const server = https.createServer(options, app);
 
+// CORS ayarları
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? ['https://chat.ipsstech.com.tr']
+  : ['http://localhost:3000'];
+
 // Socket.io'yu HTTPS sunucusuyla başlat
 const io = socketIo(server, {
   cors: {
-    origin: ["https://localhost:3000", "https://192.168.1.103:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 // Middleware
 app.use(cors({
-  origin: [
-    'https://localhost:3000',
-    'https://192.168.1.103:3000'
-  ],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));

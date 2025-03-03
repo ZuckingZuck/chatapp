@@ -1,0 +1,9 @@
+server {
+    server_name chat.ipsstech.com.tr;
+    root /var/www/chat;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+} 

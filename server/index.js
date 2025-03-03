@@ -12,34 +12,57 @@ const app = express();
 
 // SSL sertifikalarını yükle
 const options = {
-  key: fs.readFileSync(path.join(__dirname, 'certs/localhost.key')),
-  cert: fs.readFileSync(path.join(__dirname, 'certs/localhost.crt'))
+  key: fs.readFileSync('/etc/letsencrypt/live/chatapi.ipsstech.com.tr/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/chatapi.ipsstech.com.tr/fullchain.pem')
 };
 
 // HTTPS sunucusu oluştur
 const server = https.createServer(options, app);
 
 // CORS ayarları
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://chat.ipsstech.com.tr']
-  : ['http://localhost:3000'];
+const allowedOrigins = ['https://chat.ipsstech.com.tr'];
+
+// CORS middleware'ini daha detaylı yapılandır
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy violation'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
+}));
 
 // Socket.io'yu HTTPS sunucusuyla başlat
 const io = socketIo(server, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
-  }
+  },
+  transports: ['websocket', 'polling']
 });
 
-// Middleware
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}));
+// Pre-flight istekleri için OPTIONS handler ekle
+app.options('*', cors());
+
+// Body parser middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Headers middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://chat.ipsstech.com.tr');
+  res.header('Access-Control-Allow-Credentials', true);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  next();
+});
 
 // MongoDB Bağlantısı
 mongoose.connect(process.env.MONGO_URI)

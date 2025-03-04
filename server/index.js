@@ -13,13 +13,7 @@ const allowedOrigins = ['https://chat.ipsstech.com.tr'];
 
 // CORS middleware'ini yapılandır
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS policy violation'));
-    }
-  },
+  origin:"*",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
@@ -32,7 +26,7 @@ const server = http.createServer(app);
 // Socket.io'yu HTTP sunucusuyla başlat
 const io = socketIo(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: "*",
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true

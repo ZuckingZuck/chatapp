@@ -8,7 +8,7 @@ const Chat = ({ recipientId }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [callDuration, setCallDuration] = useState(0);
-  const { socket, isCallActive, currentCallUser } = useSocket();
+  const { socket, isCallActive } = useSocket();
 
   // Sohbet geçmişini yükle
   useEffect(() => {
@@ -28,60 +28,30 @@ const Chat = ({ recipientId }) => {
       loadMessages();
     }
 
-    // Component unmount olduğunda temizlik yap
     return () => {
       setMessages([]);
     };
   }, [recipientId]);
 
-  // Arama süresi sayacı
+  // Basitleştirilmiş arama süresi sayacı
   useEffect(() => {
-    let timer;
-    
-    if (isCallActive && (currentCallUser?.id === recipientId)) {
+    let timer = null;
+
+    if (isCallActive) {
       timer = setInterval(() => {
         setCallDuration(prev => prev + 1);
       }, 1000);
-    } else {
-      setCallDuration(0);
     }
 
     return () => {
       if (timer) {
         clearInterval(timer);
       }
-    };
-  }, [isCallActive, currentCallUser, recipientId]);
-
-  // Arama bittiğinde süreyi sıfırla
-  useEffect(() => {
-    const handleCallEnded = () => {
-      setCallDuration(0);
-    };
-
-    socket?.on('callEnded', handleCallEnded);
-
-    return () => {
-      socket?.off('callEnded', handleCallEnded);
-    };
-  }, [socket]);
-
-  // Yeni mesaj geldiğinde
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleNewMessage = (message) => {
-      if (message.senderId === recipientId || message.recipientId === recipientId) {
-        setMessages(prev => [...prev, message]);
+      if (!isCallActive) {
+        setCallDuration(0);
       }
     };
-
-    socket.on('receiveMessage', handleNewMessage);
-
-    return () => {
-      socket.off('receiveMessage', handleNewMessage);
-    };
-  }, [socket, recipientId]);
+  }, [isCallActive]);
 
   // Arama süresini formatla
   const formatDuration = (seconds) => {
@@ -96,7 +66,7 @@ const Chat = ({ recipientId }) => {
         <div>Yükleniyor...</div>
       ) : (
         <>
-          {isCallActive && currentCallUser?.id === recipientId && (
+          {isCallActive && (
             <div className="call-duration">
               Arama Süresi: {formatDuration(callDuration)}
             </div>

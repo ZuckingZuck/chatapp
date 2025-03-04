@@ -108,6 +108,29 @@ export const SocketProvider = ({ children }) => {
     };
   }, []);
 
+  // Socket.io bağlantı yönetimi
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('connect', () => {
+      console.log('Socket bağlandı');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket bağlantısı kesildi');
+    });
+
+    socket.on('error', (error) => {
+      console.error('Socket hatası:', error);
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('error');
+    };
+  }, [socket]);
+
   return (
     <SocketContext.Provider value={{ 
       socket, 

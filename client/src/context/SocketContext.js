@@ -68,10 +68,19 @@ export const SocketProvider = ({ children }) => {
       }
     });
 
-    newSocket.on('callAccepted', () => {
+    newSocket.on('callAccepted', (signal) => {
+      // Zil sesini durdur
       audio.pause();
       audio.currentTime = 0;
+      
+      // Arama durumunu güncelle
       setIsCallActive(true);
+      
+      // Eğer arayan tarafsak ve currentCallUser varsa
+      if (currentCallUser) {
+        // Aranan kişinin sohbetine yönlendir
+        window.location.href = `/chat/${currentCallUser.id}`;
+      }
     });
 
     newSocket.on('callRejected', () => {
@@ -86,6 +95,7 @@ export const SocketProvider = ({ children }) => {
       audio.currentTime = 0;
       setIncomingCall(null);
       setIsCallActive(false);
+      setCurrentCallUser(null);
     });
 
     // Bağlantı hata yönetimi

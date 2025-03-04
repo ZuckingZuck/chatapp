@@ -8,8 +8,7 @@ const Chat = ({ recipientId }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [callDuration, setCallDuration] = useState(0);
-  const [callTimer, setCallTimer] = useState(null);
-  const { socket, isCallActive } = useSocket();
+  const { socket, isCallActive, currentCallUser } = useSocket();
 
   // Sohbet geçmişini yükle
   useEffect(() => {
@@ -32,32 +31,40 @@ const Chat = ({ recipientId }) => {
     // Component unmount olduğunda temizlik yap
     return () => {
       setMessages([]);
-      if (callTimer) {
-        clearInterval(callTimer);
-      }
     };
   }, [recipientId]);
 
   // Arama süresi sayacı
   useEffect(() => {
-    if (isCallActive) {
-      const timer = setInterval(() => {
+    let timer;
+    
+    if (isCallActive && (currentCallUser?.id === recipientId)) {
+      timer = setInterval(() => {
         setCallDuration(prev => prev + 1);
       }, 1000);
-      setCallTimer(timer);
-
-      return () => {
-        clearInterval(timer);
-        setCallDuration(0);
-      };
     } else {
-      if (callTimer) {
-        clearInterval(callTimer);
-        setCallTimer(null);
-      }
       setCallDuration(0);
     }
-  }, [isCallActive]);
+
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [isCallActive, currentCallUser, recipientId]);
+
+  // Arama bittiğinde süreyi sıfırla
+  useEffect(() => {
+    const handleCallEnded = () => {
+      setCallDuration(0);
+    };
+
+    socket?.on('callEnded', handleCallEnded);
+
+    return () => {
+      socket?.off('callEnded', handleCallEnded);
+    };
+  }, [socket]);
 
   // Yeni mesaj geldiğinde
   useEffect(() => {
@@ -89,7 +96,7 @@ const Chat = ({ recipientId }) => {
         <div>Yükleniyor...</div>
       ) : (
         <>
-          {isCallActive && (
+          {isCallActive && currentCallUser?.id === recipientId && (
             <div className="call-duration">
               Arama Süresi: {formatDuration(callDuration)}
             </div>
